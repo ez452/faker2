@@ -10,7 +10,8 @@ const got = require('got');
 const {
 	getEnvs,
 	DisableCk,
-	EnableCk
+	EnableCk,
+	getstatus
 } = require('./ql');
 const api = got.extend({
 	retry: {
@@ -190,21 +191,24 @@ if ($.isNode() && process.env.CHECKCK_CKNOWARNERROR) {
 				TempOErrorMessage = $.error;
 
 			} else {
-
+				const strnowstatus = await getstatus(envs[i]._id);				
+				if (strnowstatus == 99) {
+					strnowstatus=envs[i].status;
+				}
 				if (!$.isLogin) {
 
-					if (envs[i].status == 0) {
+					if (strnowstatus == 0) {
 						const DisableCkBody = await DisableCk(envs[i]._id);
 						if (DisableCkBody.code == 200) {
 							if ($.isNode() && WP_APP_TOKEN_ONE) {
-								await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已失效,自动禁用成功!\n`,`${$.UserName}`);
+								await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已失效,自动禁用成功!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`, `${$.UserName}`);
 							}
 							console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已失效,自动禁用成功!\n`);
 							TempDisableMessage = ReturnMessageTitle + ` (自动禁用成功!)\n`;
 							TempErrorMessage = ReturnMessageTitle + ` 已失效,自动禁用成功!\n`;
 						} else {
 							if ($.isNode() && WP_APP_TOKEN_ONE) {
-								await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已失效,自动禁用失败!\n`,`${$.UserName}`);
+								await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已失效!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`, `${$.UserName}`);
 							}
 							console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已失效,自动禁用失败!\n`);
 							TempDisableMessage = ReturnMessageTitle + ` (自动禁用失败!)\n`;
@@ -215,20 +219,20 @@ if ($.isNode() && process.env.CHECKCK_CKNOWARNERROR) {
 						TempErrorMessage = ReturnMessageTitle + ` 已失效,已禁用.\n`;
 					}
 				} else {
-					if (envs[i].status == 1) {
+					if (strnowstatus == 1) {
 
 						if (CKAutoEnable == "true") {
 							const EnableCkBody = await EnableCk(envs[i]._id);
 							if (EnableCkBody.code == 200) {
 								if ($.isNode() && WP_APP_TOKEN_ONE) {
-									await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,自动启用成功!\n`,`${$.UserName}`);
+									await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,自动启用成功!\n祝您挂机愉快...`, `${$.UserName}`);
 								}
 								console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已恢复,自动启用成功!\n`);
 								TempEnableMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
 								TempSuccessMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
 							} else {
 								if ($.isNode() && WP_APP_TOKEN_ONE) {
-									await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,但自动启用失败!\n`,`${$.UserName}`);
+									await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,但自动启用失败!\n请联系管理员处理...`, `${$.UserName}`);
 								}
 								console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已恢复,但自动启用失败!\n`);
 								TempEnableMessage = ReturnMessageTitle + ` (自动启用失败!)\n`;
